@@ -18,7 +18,6 @@ const customerSchema = mongoose.Schema({
     password : {
         type : String,
         minlength : 4,
-        maxlength : 8,
         required : true,
     },
     firstname: {

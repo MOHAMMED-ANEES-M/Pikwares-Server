@@ -16,6 +16,7 @@ const Laptops = require('./model/laptopsSchema');
 const Headsets = require('./model/headsetsSchema');
 const Men = require('./model/menSchema');
 const Women = require('./model/womenSchema');
+const Cart = require('./model/cartSchema');
 
 app.use(cors())
 
@@ -106,7 +107,8 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           let response = await Customer.findOne({email})
           
           if (token) {
-            return res.status(200).json({ admin: true, token, id: response.id });
+            console.log('admin');
+            return res.status(200).json({ admin: true, token, id: 'a1b2c3' });
           }
           
             console.log(response);
@@ -405,7 +407,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
             return res.status(404).json({ message: 'Products not found' });
           }
         res.json(response)
-        console.log('mobileProducts response: ',response);
+        // console.log('mobileProducts response: ',response);
     }catch(err){
         console.log(err.message);
         res.status(500).json({message: err.message})
@@ -421,7 +423,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
             return res.status(404).json({ message: 'Products not found' });
           }
         res.json(response)
-        console.log('laptopProducts response: ',response);
+        // console.log('laptopProducts response: ',response);
     }catch(err){
         console.log(err.message);
         res.status(500).json({message: err.message})
@@ -437,7 +439,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
             return res.status(404).json({ message: 'Products not found' });
           }
         res.json(response)
-        console.log('headsetProducts response: ',response);
+        // console.log('headsetProducts response: ',response);
     }catch(err){
         console.log(err.message);
         res.status(500).json({message: err.message})
@@ -453,7 +455,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
             return res.status(404).json({ message: 'Products not found' });
           }
         res.json(response)
-        console.log('menProducts response: ',response);
+        // console.log('menProducts response: ',response);
     }catch(err){
         console.log(err.message);
         res.status(500).json({message: err.message})
@@ -469,7 +471,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
             return res.status(404).json({ message: 'Products not found' });
           }
         res.json(response)
-        console.log('womenProducts response: ',response);
+        // console.log('womenProducts response: ',response);
     }catch(err){
         console.log(err.message);
         res.status(500).json({message: err.message})
@@ -483,5 +485,144 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     res.json(response)
     console.log(response);
   })
+
+  app.delete('/deleteLaptops/:id', async (req,res)=>{
+    let id =req.params.id
+    let response = await Laptops.findByIdAndDelete(id)
+    res.json(response)
+    console.log(response);
+  })
+
+  app.delete('/deleteHeadsets/:id', async (req,res)=>{
+    let id =req.params.id
+    let response = await Headsets.findByIdAndDelete(id)
+    res.json(response)
+    console.log(response);
+  })
+
+  app.delete('/deleteMen/:id', async (req,res)=>{
+    let id =req.params.id
+    let response = await Men.findByIdAndDelete(id)
+    res.json(response)
+    console.log(response);
+  })
+
+  app.delete('/deleteWomen/:id', async (req,res)=>{
+    let id =req.params.id
+    let response = await Women.findByIdAndDelete(id)
+    res.json(response)
+    console.log(response);
+  })
+
+  app.get('/findCustomers', verifyToken, async (req,res)=>{
+
+    console.log('req body: ',req.body);
+    
+    try{
+
+      let response = await Customer.find()
+      console.log(response,'customers response');
+      res.json(response)
+    }catch(err){
+      console.log(err.message);
+      res.status(500).json(err.message)
+    }
+  }) 
+
+  app.get('/findOneProduct/:id/:category', async (req,res)=>{
+
+    let id = req.params.id
+    let category = req.params.category
+    console.log(id,'id product');
+    console.log(category,'category');
+
+    try{
+
+      if(category === 'mobilephones'){
+        let response = await Mobiles.findById(id)
+        // if(!response){
+        //   return res.json({message:'Out of Stock'})
+        // }
+        console.log(response,'mobile product response');
+        res.json(response)
+      }
+
+      if(category === 'laptops'){
+        let response = await Laptops.findById(id)
+        console.log(response,'product response');
+        res.json(response)
+      }
+
+      if(category === 'headsets'){
+        let response = await Headsets.findById(id)
+        console.log(response,'product response');
+        res.json(response)
+      }
+
+      if(category === 'men'){
+        let response = await Men.findById(id)
+        console.log(response,'product response');
+        res.json(response)
+      }
+
+      if(category === 'women'){
+        let response = await Women.findById(id)
+        console.log(response,'product response');
+        res.json(response)
+      }
+      
+    }catch(err){
+      console.log(err.message);
+      res.status(500).json(err.message)
+    }
+  })
+
+  app.post('/insertCart/:id', async (req,res)=>{
+
+    let data = ({ customerId: req.params.id,productId: req.body._id , productname: req.body.productname, productprice: req.body.productprice, productcategory: req.body.productcategory, productdescription: req.body.productdescription, images: req.body.images})
+    console.log(data,'cart item');
+
+    try{
+
+      let newCart = new Cart(data)
+      let response = await newCart.save()
+      console.log(response,'cart response');
+      res.json(response)
+
+    }catch(err){
+      console.log(err.message);
+      res.status(500).json(err.message)
+    }
+  })
+
+  app.get('/findCart/:id', async (req,res)=>{
+
+    let id = req.params.id
+    
+    try{
+      let response = await Cart.find({customerId:id})
+      console.log(response,'cart find response');
+      res.json(response)
+    }catch(err){
+      console.log(err.message);
+      res.status(500).json(err.message)
+    }
+
+  })
+
+  app.delete('/deleteCartProduct/:id', async (req,res)=>{
+
+    let id = req.params.id
+
+    try{
+      let response = await Cart.findByIdAndDelete(id)
+      console.log(response,'deleted cart product');
+      res.json(response)
+    }catch(err){
+      console.log(err.message);
+      res.status(500).json(err.message)
+    }
+  })
+
 
   app.listen(8000)
