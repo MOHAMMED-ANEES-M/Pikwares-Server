@@ -17,6 +17,7 @@ const Headsets = require('./model/headsetsSchema');
 const Men = require('./model/menSchema');
 const Women = require('./model/womenSchema');
 const Cart = require('./model/cartSchema');
+const Orders = require('./model/ordersSchema');
 
 app.use(cors())
 
@@ -620,6 +621,81 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
       res.json(response)
     }catch(err){
       console.log(err.message);
+      res.status(500).json(err.message)
+    }
+  })
+
+  app.post('/orders/insert', async(req,res)=>{
+    try{
+      console.log(req.body,'order reqbody');
+
+      const existingOrder = await Orders.findOne({ productId: req.body.productId });
+
+      if (existingOrder) {
+          return res.status(400).json({ message: 'This product has already been ordered.' });
+      }
+
+      let newOrder = new Orders(req.body)
+      let response = await newOrder.save()
+      console.log(response,'order insert response');
+      res.json(response)
+    }catch(err){
+      console.log(err);
+      res.status(500).json(err.message)
+    }
+  })
+
+  app.get('/customer/findOrders/:id', verifyToken, async(req,res)=>{
+    
+    try{
+      let id = req.params.id
+      let response = await Orders.find({customerId:id})
+      console.log(response,'customer orders response');
+      res.json(response)
+    }catch(err){
+      res.status(500).json(err.message)
+      console.log(err);
+    }
+  })
+
+  app.get('/customer/orderedProducts/:id',verifyToken, async(req,res)=>{
+
+    try{
+
+      let id = req.params.id
+
+      let mobileResponse = await Mobiles.findById(id)
+      if(mobileResponse){
+        console.log(mobileResponse,'ordered products response');
+        return res.json(mobileResponse)
+      }
+
+      let laptopResponse = await Laptops.findById(id)
+      if(laptopResponse){
+        console.log(laptopResponse,'ordered products response');
+        return res.json(laptopResponse)
+      }
+
+      let headsetResponse = await Headsets.findById(id)
+      if(headsetResponse){
+        console.log(headsetResponse,'ordered products response');
+        return res.json(headsetResponse)
+      }
+
+      let menResponse = await Men.findById(id)
+      if(menResponse){
+        console.log(menResponse,'ordered products response');
+        return res.json(menResponse)
+      }
+
+      let womenResponse = await Women.findById(id)
+      if(womenResponse){
+        console.log(womenResponse,'ordered products response');
+        return res.json(womenResponse)
+      }
+
+    }catch(err){
+      console.log(err);
       res.status(500).json(err.message)
     }
   })
