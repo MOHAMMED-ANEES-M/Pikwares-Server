@@ -32,9 +32,13 @@ const cartSchema = mongoose.Schema({
         required: true
       }, 
       productId: {
-        unique : true,
         type: mongoose.Schema.Types.ObjectId,
         required: true,
+      },
+      count: {
+        type: Number,
+        length:1,
+        default:1,
       },
       
 })

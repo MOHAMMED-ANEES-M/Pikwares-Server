@@ -11,9 +11,10 @@ const ordersSchema = mongoose.Schema({
         required: true
     }, 
     productId: {
-        unique : true,
         type: mongoose.Schema.Types.ObjectId,
+        ref:'Headsets',
         required: true,
+        index: false,
     },
     statusDate: {
         type: Date,

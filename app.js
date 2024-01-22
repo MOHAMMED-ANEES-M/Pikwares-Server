@@ -34,7 +34,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
 
   const verifyToken=(req,res,next)=>{
     const token= req.headers['authorization'];
-    console.log(token,'token');
+    // console.log(token,'token');
 
     if(!token){
         return res.status(403).json({ message: 'Token is not provided'})
@@ -219,7 +219,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
   app.get('/customer/address/findAddress',verifyToken, async(req,res)=>{
     try{
       let {id} = req.query
-      console.log('findadrsid: ',id);
+      // console.log('findadrsid: ',id);
       let response = await AddressCust.findOne({customerId:id})
         if (!response) {
           console.log('Adddress not found');
@@ -544,31 +544,31 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
         // if(!response){
         //   return res.json({message:'Out of Stock'})
         // }
-        console.log(response,'mobile product response');
+        // console.log(response,'mobile product response');
         res.json(response)
       }
 
       if(category === 'laptops'){
         let response = await Laptops.findById(id)
-        console.log(response,'product response');
+        // console.log(response,'product response');
         res.json(response)
       }
 
       if(category === 'headsets'){
         let response = await Headsets.findById(id)
-        console.log(response,'product response');
+        // console.log(response,'product response');
         res.json(response)
       }
 
       if(category === 'men'){
         let response = await Men.findById(id)
-        console.log(response,'product response');
+        // console.log(response,'product response');
         res.json(response)
       }
 
       if(category === 'women'){
         let response = await Women.findById(id)
-        console.log(response,'product response');
+        // console.log(response,'product response');
         res.json(response)
       }
       
@@ -602,6 +602,23 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     
     try{
       let response = await Cart.find({customerId:id})
+      // console.log(response,'cart find response');
+      res.json(response)
+    }catch(err){
+      console.log(err.message);
+      res.status(500).json(err.message)
+    }
+
+  })
+
+  app.get('/findOneCart/:id/:customerId', verifyToken, async (req,res)=>{
+
+    let id = req.params.id
+    let customerId = req.params.customerId
+    console.log(id,'prid');
+    
+    try{
+      let response = await Cart.findOne({productId:id,customerId:customerId})
       console.log(response,'cart find response');
       res.json(response)
     }catch(err){
@@ -629,10 +646,21 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     try{
       console.log(req.body,'order reqbody');
 
-      const existingOrder = await Orders.findOne({ productId: req.body.productId });
+      const existingOrder = await Orders.findOne({ productId: req.body.productId, customerId:req.body.customerId });
 
       if (existingOrder) {
-          return res.status(400).json({ message: 'This product has already been ordered.' });
+        let cancelledOrder = await Orders.findOne({ productId: req.body.productId, customerId: req.body.customerId });
+      
+        if (cancelledOrder) {
+          const { orderStatus, _id, customerId, productId, statusDate } = cancelledOrder;
+      
+          console.log(orderStatus, 'status');
+      
+          if (orderStatus !== 'Order Cancelled') {
+            return res.status(400).json({ message: 'This product has already been ordered.' });
+          }
+        }
+      
       }
 
       let newOrder = new Orders(req.body)
@@ -650,7 +678,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     try{
       let id = req.params.id
       let response = await Orders.find({customerId:id})
-      console.log(response,'customer orders response');
+      // console.log(response,'customer orders response');
       res.json(response)
     }catch(err){
       res.status(500).json(err.message)
@@ -666,31 +694,31 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
 
       let mobileResponse = await Mobiles.findById(id)
       if(mobileResponse){
-        console.log(mobileResponse,'ordered products response');
+        // console.log(mobileResponse,'ordered products response');
         return res.json(mobileResponse)
       }
 
       let laptopResponse = await Laptops.findById(id)
       if(laptopResponse){
-        console.log(laptopResponse,'ordered products response');
+        // console.log(laptopResponse,'ordered products response');
         return res.json(laptopResponse)
       }
 
       let headsetResponse = await Headsets.findById(id)
       if(headsetResponse){
-        console.log(headsetResponse,'ordered products response');
+        // console.log(headsetResponse,'ordered products response');
         return res.json(headsetResponse)
       }
 
       let menResponse = await Men.findById(id)
       if(menResponse){
-        console.log(menResponse,'ordered products response');
+        // console.log(menResponse,'ordered products response');
         return res.json(menResponse)
       }
 
       let womenResponse = await Women.findById(id)
       if(womenResponse){
-        console.log(womenResponse,'ordered products response');
+        // console.log(womenResponse,'ordered products response');
         return res.json(womenResponse)
       }
 
@@ -700,5 +728,265 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     }
   })
 
+  app.put('/updateCount/:id', async (req,res)=>{
+
+    let id = req.params.id
+    console.log(id,'id cartupdate');
+    console.log(req.body,'reqbody cartupdate');
+
+    try{
+
+      if(req.body.category === 'mobilephones'){
+        if(req.body.role==='priceIncrement'){
+          let prResponse = await Mobiles.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        if(req.body.role==='priceDecrement'){
+          let prResponse = await Mobiles.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        // console.log(response,'cartupdate response');
+        res.json(response)
+      }
+
+      if(req.body.category === 'laptops'){
+        if(req.body.role==='priceIncrement'){
+          let prResponse = await Laptops.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        if(req.body.role==='priceDecrement'){
+          let prResponse = await Laptops.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        // console.log(response,'cartupdate response');
+        res.json(response)
+      }
+
+      if(req.body.category === 'headsets'){
+        if(req.body.role==='priceIncrement'){
+          let prResponse = await Headsets.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        if(req.body.role==='priceDecrement'){
+          let prResponse = await Headsets.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        // console.log(response,'cartupdate response');
+        res.json(response)
+      }
+
+      if(req.body.category === 'men'){
+        if(req.body.role==='priceIncrement'){
+          let prResponse = await Men.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        if(req.body.role==='priceDecrement'){
+          let prResponse = await Men.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        // console.log(response,'cartupdate response');
+        res.json(response)
+      }
+
+      if(req.body.category === 'women'){
+        if(req.body.role==='priceIncrement'){
+          let prResponse = await Women.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        if(req.body.role==='priceDecrement'){
+          let prResponse = await Women.findOne({_id:req.body.productId})
+          console.log(prResponse,'prresponse');
+          let defaultPrice = prResponse.productprice
+          var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
+          console.log(newPrice,'newprice');
+        }
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        // console.log(response,'cartupdate response');
+        res.json(response)
+      }
+
+    }catch(err){
+      console.log(err);
+      res.status(500).json(err.message)
+    }
+  })
+
+  app.get('/admin/findOrders', verifyToken, async(req,res)=>{
+    
+    try{
+      let response = await Orders.find()
+      // console.log(response,'customer orders response');
+      res.json(response)
+    }catch(err){
+      res.status(500).json(err.message)
+      console.log(err);
+    }
+  })
+
+  app.get('/admin/orderedCustomers/:id',verifyToken, async(req,res)=>{
+
+    try{
+
+      let id = req.params.id
+
+      let response = await Customer.findById(id)
+      
+        // console.log(response,'ordered customers response');
+        return res.json(response)
+      
+
+    }catch(err){
+      console.log(err);
+      res.status(500).json(err.message)
+    }
+  })
+
+  app.get('/admin/order/findOne/:id', verifyToken, async(req,res)=>{
+
+    try{
+      let id = req.params.id
+      let response = await Orders.findById(id)
+      // console.log(response,'findOne order response');
+      res.json(response)
+    }catch(err){
+      console.log(err);
+      res.status(500).json(err.message)
+    }
+
+  })
+
+  app.get('/admin/findOneCustomer/:id', verifyToken, async(req,res)=>{
+    try{
+      let id = req.params.id
+      let response = await Customer.findById(id)
+      // console.log(response,'customerAccount response');
+      if (!response) {
+        return res.status(404).json({ message: 'Customer not found' });
+      }
+    res.json(response)
+}catch(err){
+    console.log(err.message);
+    res.status(500).json(err.message)
+}
+})
+
+app.get('/admin/findAddress/:id', verifyToken, async(req,res)=>{
+  try{
+    let id = req.params.id
+    let response = await AddressCust.findOne({customerId:id})
+    if (!response) {
+      return res.status(404).json({ message: 'Address not found' });
+    }
+    // console.log(response,'address response');
+    res.json(response)
+  }catch(err){
+    console.log(err.message);
+    res.status(500).json({message: err.message})
+}
+})
+
+app.get('/admin/product/findOne/:id', verifyToken, async(req,res)=>{
+  try{
+      let id = req.params.id
+
+      let mobileResponse = await Mobiles.findById(id)
+      if(mobileResponse){
+        // console.log(mobileResponse,'ordered products response');
+        return res.json(mobileResponse)
+      }
+
+      let laptopResponse = await Laptops.findById(id)
+      if(laptopResponse){
+        // console.log(laptopResponse,'ordered products response');
+        return res.json(laptopResponse)
+      }
+
+      let headsetResponse = await Headsets.findById(id)
+      if(headsetResponse){
+        // console.log(headsetResponse,'ordered products response');
+        return res.json(headsetResponse)
+      }
+
+      let menResponse = await Men.findById(id)
+      if(menResponse){
+        // console.log(menResponse,'ordered products response');
+        return res.json(menResponse)
+      }
+
+      let womenResponse = await Women.findById(id)
+      if(womenResponse){
+        // console.log(womenResponse,'ordered products response');
+        return res.json(womenResponse)
+      }
+
+  }catch(err){
+    console.log(err.message);
+    res.status(500).json({message: err.message})
+  }
+})
+
+app.put('/admin/order/updateStatus/:id', verifyToken, async(req,res)=>{
+  try{
+    let id = req.params.id
+    console.log(req.body,'req');
+    const {orderSatus} = req.body
+    console.log(orderSatus,'orderstatus');
+
+    const order = await Orders.findById(id);
+    order.orderStatus = orderSatus
+    order.statusDate = new Date();
+    const updatedOrder = await order.save();
+    console.log(updatedOrder,'orderUpdate response');
+    res.json(updatedOrder)
+
+  }catch(err){
+    console.log(err.message);
+    res.status(500).json({message: err.message})
+  }
+})
+
+app.put('/cancelOrder/:id', async(req,res)=>{
+  try{
+    let id = req.params.id
+    console.log(id,'del id');
+    let response = await Orders.findByIdAndUpdate(id,req.body)
+    console.log(response,'deleted cart response');
+    res.json(response)
+  }catch(err){
+    console.log(err.message);
+    res.status(500).json({message: err.message})
+  }
+})
 
   app.listen(8000)
