@@ -8,7 +8,10 @@ const Customer = require('./model/customerSchema');
 const AddressCust = require('./model/addressCustSchema');
 var jwt = require('jsonwebtoken');
 const emailValidator = require('email-validator');
+const Razorpay = require('razorpay')
+const crypto = require('crypto');
 
+const secretKey = 'uhJjQhJyCGOFKcV27wCXodMB'; 
 
 var cors = require('cors');
 const Mobiles = require('./model/mobilesSchema');
@@ -18,6 +21,7 @@ const Men = require('./model/menSchema');
 const Women = require('./model/womenSchema');
 const Cart = require('./model/cartSchema');
 const Orders = require('./model/ordersSchema');
+const Payment = require('./model/paymentSchema');
 
 app.use(cors())
 
@@ -62,6 +66,11 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
 
   };
 
+
+  const razorpay = new Razorpay({
+    key_id: 'rzp_test_tgyzb525OhQfY8',
+    key_secret: 'uhJjQhJyCGOFKcV27wCXodMB'
+  })
 
   app.post('/customer/insert', async (req,res)=>{
 
@@ -691,7 +700,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     try{
 
       let id = req.params.id
-
+      console.log(id,'proid');
       let mobileResponse = await Mobiles.findById(id)
       if(mobileResponse){
         // console.log(mobileResponse,'ordered products response');
@@ -988,5 +997,66 @@ app.put('/cancelOrder/:id', async(req,res)=>{
     res.status(500).json({message: err.message})
   }
 })
+
+app.post('/paymentorder', async (req, res) => {
+  console.log('payorder');
+  console.log(req.body,'req');
+  const options = {
+      amount: req.body.amount*100,
+      currency: 'INR',
+      receipt: crypto.randomBytes(10).toString('hex'),
+      payment_capture: 1 // corrected assignment
+  };
+  console.log(options,'options');
+
+  try {
+      const response = await razorpay.orders.create(options);
+      res.json(response);
+  } catch (error) {
+      console.log(error);
+      res.status(400).send('not able to establish order');
+  }
+});
+
+app.post('/paymentCapture',async (req, res) => {
+
+  console.log(req.body,'reqbody');
+  if (!req.body.order_id || !req.body.currency || !req.body.amount) {
+    return res.status(400).send('Missing required fields');
+}
+
+  const data = crypto.createHmac('sha256', secretKey);
+  data.update(JSON.stringify(req.body));
+  const digest = data.digest('hex');
+
+  if (digest === req.headers['x-razorpay-signature']) {
+      console.log('Request is legit');
+
+        // Store payment information in the database
+        const paymentData = {
+          order_id: req.body.order_id,
+          currency: req.body.currency,
+          amount: req.body.amount,
+          // Add more fields as needed
+      };
+
+      try {
+          const savedPayment = await Payment.create(paymentData);
+          console.log('Payment saved to database:', savedPayment);
+          res.json({
+              status: 'ok'
+          });
+      } catch (error) {
+          console.error('Error saving payment to database:', error);
+          res.status(500).send('Internal Server Error');
+      }
+      res.redirect(`http://localhost:3000/paymentSuccess?reference=${req.body.order_id}`)
+  } else {
+      res.status(400).send('Invalid signature');
+  }
+});
+
+
+
 
   app.listen(8000)

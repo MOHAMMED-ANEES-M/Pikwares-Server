@@ -8,6 +8,11 @@ const customerSchema = mongoose.Schema({
         minlength : 10,
         required : true,
     },
+    address : {
+      type : String,
+      minlength : 10,
+      required : true,
+    },
     city: {
         type: String,
         minlength: 3,
@@ -35,7 +40,7 @@ const customerSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Customer', 
         required: true
-         }, 
+      }, 
 
 })
 
