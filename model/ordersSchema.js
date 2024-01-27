@@ -12,9 +12,25 @@ const ordersSchema = mongoose.Schema({
     }, 
     productId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:'Headsets',
         required: true,
         index: false,
+    },
+    count: {
+        type: Number,
+        required: true,
+        index: false,
+    },
+    razorId: {
+        type: String,
+        ref: 'Payment', 
+    },
+    paymentId: {
+        type: String,
+        ref: 'Payment', 
+    },
+    mode:{
+        type: String,
+        required:true,
     },
     statusDate: {
         type: Date,

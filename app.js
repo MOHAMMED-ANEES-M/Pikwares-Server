@@ -655,22 +655,22 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     try{
       console.log(req.body,'order reqbody');
 
-      const existingOrder = await Orders.findOne({ productId: req.body.productId, customerId:req.body.customerId });
+      // const existingOrder = await Orders.findOne({ productId: req.body.productId, customerId:req.body.customerId });
 
-      if (existingOrder) {
-        let cancelledOrder = await Orders.findOne({ productId: req.body.productId, customerId: req.body.customerId });
+      // if (existingOrder) {
+      //   let cancelledOrder = await Orders.findOne({ productId: req.body.productId, customerId: req.body.customerId });
       
-        if (cancelledOrder) {
-          const { orderStatus, _id, customerId, productId, statusDate } = cancelledOrder;
+      //   if (cancelledOrder) {
+      //     const { orderStatus, _id, customerId, productId, statusDate } = cancelledOrder;
       
-          console.log(orderStatus, 'status');
+      //     console.log(orderStatus, 'status');
       
-          if (orderStatus !== 'Order Cancelled') {
-            return res.status(400).json({ message: 'This product has already been ordered.' });
-          }
-        }
+      //     if (orderStatus !== 'Order Cancelled') {
+      //       return res.status(400).json({ message: 'This product has already been ordered.' });
+      //     }
+      //   }
       
-      }
+      // }
 
       let newOrder = new Orders(req.body)
       let response = await newOrder.save()
@@ -1005,7 +1005,7 @@ app.post('/paymentorder', async (req, res) => {
       amount: req.body.amount*100,
       currency: 'INR',
       receipt: crypto.randomBytes(10).toString('hex'),
-      payment_capture: 1 // corrected assignment
+      payment_capture: 1 
   };
   console.log(options,'options');
 
@@ -1018,39 +1018,34 @@ app.post('/paymentorder', async (req, res) => {
   }
 });
 
+const hmac_sha256 = (data, key) => {
+  const hmac = crypto.createHmac('sha256', key);
+  hmac.update(data);
+  return hmac.digest('hex');
+};
+
 app.post('/paymentCapture',async (req, res) => {
 
-  console.log(req.body,'reqbody');
-  if (!req.body.order_id || !req.body.currency || !req.body.amount) {
-    return res.status(400).send('Missing required fields');
-}
+    console.log(req.body,'reqbody');
 
-  const data = crypto.createHmac('sha256', secretKey);
-  data.update(JSON.stringify(req.body));
-  const digest = data.digest('hex');
+      generated_signature = hmac_sha256(req.body.razorId + "|" + req.body.paymentId, secretKey);
 
-  if (digest === req.headers['x-razorpay-signature']) {
-      console.log('Request is legit');
-
-        // Store payment information in the database
-        const paymentData = {
-          order_id: req.body.order_id,
-          currency: req.body.currency,
-          amount: req.body.amount,
-          // Add more fields as needed
-      };
-
+      if (generated_signature == req.body.signature) {
+        console.log('payment is successful')
+      
       try {
-          const savedPayment = await Payment.create(paymentData);
+        const paymentData = { razorId: req.body.razorId, currency: 'INR', amount: req.body.amount, paymentId: req.body.paymentId };
+
+          const newPayment = new Payment(paymentData)
+          const savedPayment = await newPayment.save();
           console.log('Payment saved to database:', savedPayment);
-          res.json({
-              status: 'ok'
-          });
+          res.json({ status: 'ok',savedPayment });
+          // res.redirect(`http://localhost:3000/paymentSuccess?reference=${savedPayment.paymentId}`)
+          // return
       } catch (error) {
           console.error('Error saving payment to database:', error);
           res.status(500).send('Internal Server Error');
       }
-      res.redirect(`http://localhost:3000/paymentSuccess?reference=${req.body.order_id}`)
   } else {
       res.status(400).send('Invalid signature');
   }

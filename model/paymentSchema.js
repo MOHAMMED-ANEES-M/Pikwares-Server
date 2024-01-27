@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-    order_id: {
+    razorId: {
+        type: String,
+        required: true,
+    },
+    paymentId: {
         type: String,
         required: true,
     },
@@ -13,7 +17,6 @@ const paymentSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    // Add more fields as needed
     timestamp: {
         type: Date,
         default: Date.now,
