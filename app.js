@@ -148,7 +148,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
 
     try{
         let {id} = req.query
-        // console.log('id: ',id);
+        console.log('Cust id: ',id);
         let response = await Customer.findOne({_id:id})
         if (!response) {
             return res.status(404).json({ message: 'Customer not found' });
@@ -1055,3 +1055,5 @@ app.post('/paymentCapture',async (req, res) => {
 
 
   app.listen(8000)
+
+  // module.exports = app
