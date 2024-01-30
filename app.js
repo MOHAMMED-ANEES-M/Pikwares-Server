@@ -22,6 +22,8 @@ const Women = require('./model/womenSchema');
 const Cart = require('./model/cartSchema');
 const Orders = require('./model/ordersSchema');
 const Payment = require('./model/paymentSchema');
+const Review = require('./model/reviewSchema');
+const { log } = require('console');
 
 app.use(cors())
 
@@ -913,11 +915,12 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
 app.get('/admin/findAddress/:id', verifyToken, async(req,res)=>{
   try{
     let id = req.params.id
+    console.log(id,'custId');
     let response = await AddressCust.findOne({customerId:id})
     if (!response) {
       return res.status(404).json({ message: 'Address not found' });
     }
-    // console.log(response,'address response');
+    console.log(response,'address response');
     res.json(response)
   }catch(err){
     console.log(err.message);
@@ -1068,6 +1071,37 @@ app.get('/findPayment/:id', verifyToken, async(req,res)=>{
     const id = req.params.id
     let response = await Payment.findOne({paymentId:id})
     console.log(response,'findPayment reponse');
+    res.json(response)
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err.message)
+  }
+})
+
+app.post('/review/insert', async(req,res)=>{
+  try{
+    // console.log(req.body,'reqbody');
+    const {productId,customerId,review,rating} = req.body
+    let alreadyReviewed = await Review.findOne({customerId:customerId,productId:productId})
+    console.log(alreadyReviewed,'already reviewed');
+    if (alreadyReviewed) {
+      return res.status(500).json('Already reviewed')
+    }
+    let newReview = new Review(req.body)
+    let response = await newReview.save()
+    console.log(response,'review response');
+    res.json(response)
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err.message)
+  }
+})
+
+app.get('/findReview/:id', async(req,res)=>{
+  try{
+    const id = req.params.id
+    let response = await Review.find({productId:id})
+    console.log(response,'find review response');
     res.json(response)
   }catch(err){
     console.log(err);
