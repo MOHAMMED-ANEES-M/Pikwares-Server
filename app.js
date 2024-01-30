@@ -565,7 +565,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
 
       if(category === 'headsets'){
         let response = await Headsets.findById(id)
-        // console.log(response,'product response');
+        console.log(response,'product response');
         res.json(response)
       }
 
@@ -582,7 +582,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
       }
       
     }catch(err){
-      console.log(err.message);
+      console.log(err);
       res.status(500).json(err.message)
     }
   })
@@ -988,7 +988,7 @@ app.put('/admin/order/updateStatus/:id', verifyToken, async(req,res)=>{
 app.put('/cancelOrder/:id', async(req,res)=>{
   try{
     let id = req.params.id
-    console.log(id,'del id');
+    console.log(id,'cancel order id');
     let response = await Orders.findByIdAndUpdate(id,req.body)
     console.log(response,'deleted cart response');
     res.json(response)
@@ -1034,7 +1034,7 @@ app.post('/paymentCapture',async (req, res) => {
         console.log('payment is successful')
       
       try {
-        const paymentData = { razorId: req.body.razorId, currency: 'INR', amount: req.body.amount, paymentId: req.body.paymentId };
+        const paymentData = { razorId: req.body.razorId, currency: 'INR', amount: req.body.amount/100, paymentId: req.body.paymentId };
 
           const newPayment = new Payment(paymentData)
           const savedPayment = await newPayment.save();
@@ -1050,6 +1050,30 @@ app.post('/paymentCapture',async (req, res) => {
       res.status(400).send('Invalid signature');
   }
 });
+
+app.get('/findOrder/:id', verifyToken, async(req,res)=>{
+  try{
+    const id = req.params.id
+    let response = await Orders.findOne({paymentId:id})
+    console.log(response,'findorder reponse');
+    res.json(response)
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err.message)
+  }
+})
+
+app.get('/findPayment/:id', verifyToken, async(req,res)=>{
+  try{
+    const id = req.params.id
+    let response = await Payment.findOne({paymentId:id})
+    console.log(response,'findPayment reponse');
+    res.json(response)
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err.message)
+  }
+})
 
 
 
