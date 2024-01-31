@@ -24,6 +24,7 @@ const Orders = require('./model/ordersSchema');
 const Payment = require('./model/paymentSchema');
 const Review = require('./model/reviewSchema');
 const { log } = require('console');
+const Wishlist = require('./model/wishlistSchema');
 
 app.use(cors())
 
@@ -1109,6 +1110,74 @@ app.get('/findReview/:id', async(req,res)=>{
   }
 })
 
+app.get('/review/customers/:id', async(req,res)=>{
+  try{
+    const id = req.params.id
+    let response = await Customer.findOne({_id:id})
+    console.log(response,'reviewed customers response');
+    res.json(response)
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err.message)
+  }
+})
+
+app.post('/insertWishlist/:id', async (req,res)=>{
+
+  let data = ({ customerId: req.params.id,productId: req.body._id , productname: req.body.productname, productprice: req.body.productprice, productcategory: req.body.productcategory, productdescription: req.body.productdescription, images: req.body.images})
+  console.log(data,'wishlist item');
+
+  try{
+
+    let newWishlist = new Wishlist(data)
+    let response = await newWishlist.save()
+    console.log(response,'wishlist added response');
+    res.json(response)
+
+  }catch(err){
+    console.log(err.message);
+    res.status(500).json(err.message)
+  }
+})
+
+app.delete('/deleteWishlist/:id', async (req,res)=>{
+  try{
+    let id = req.params.id
+    let response = await Wishlist.findByIdAndDelete(id)
+    console.log(response,'wishlist deleted response');
+    res.json(response)
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err.message)
+  }
+})
+
+app.delete('/viewProduct/deleteWishlist/:id', async (req,res)=>{
+  try{
+    let id = req.params.id
+    let response = await Wishlist.deleteOne({productId:id})
+    console.log(response,'wishlist deleted response');
+    res.json(response)
+  }catch(err){
+    console.log(err);
+    res.status(500).json(err.message)
+  }
+})
+
+app.get('/findWishlist/:id', async (req,res)=>{
+
+  let id = req.params.id
+  
+  try{
+    let response = await Wishlist.find({customerId:id})
+    // console.log(response,'wishlist find response');
+    res.json(response)
+  }catch(err){
+    console.log(err.message);
+    res.status(500).json(err.message)
+  }
+
+})
 
 
 
