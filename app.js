@@ -4,16 +4,19 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const multer = require('multer');
-const Customer = require('./model/customerSchema');
-const AddressCust = require('./model/addressCustSchema');
 var jwt = require('jsonwebtoken');
 const emailValidator = require('email-validator');
 const Razorpay = require('razorpay')
 const crypto = require('crypto');
+const socketIo = require('socket.io');
+const http = require('http');
+const server = http.createServer(app);
+var cors = require('cors');
 
 const secretKey = 'uhJjQhJyCGOFKcV27wCXodMB'; 
 
-var cors = require('cors');
+const AddressCust = require('./model/addressCustSchema');
+const Customer = require('./model/customerSchema');
 const Mobiles = require('./model/mobilesSchema');
 const Laptops = require('./model/laptopsSchema');
 const Headsets = require('./model/headsetsSchema');
@@ -23,8 +26,8 @@ const Cart = require('./model/cartSchema');
 const Orders = require('./model/ordersSchema');
 const Payment = require('./model/paymentSchema');
 const Review = require('./model/reviewSchema');
-const { log } = require('console');
 const Wishlist = require('./model/wishlistSchema');
+const Message = require('./model/messageSchema');
 
 app.use(cors())
 
@@ -34,6 +37,19 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
   const db=mongoose.connection
 
   app.use(express.json())
+
+  const io = socketIo(server,{
+    cors: {
+        origin: 'http://localhost:3000',
+        methods: ['GET','POST'],
+        credentials: true,
+        transports: ['websocket'],
+        pingInterval: 10000,
+        pingTimeout: 5000,
+    },
+  });
+  const PORT = 8000;
+
 
   const storage = multer.memoryStorage(); // Store files in memory
   const upload = multer({ storage: storage, limits: { fieldSize: 25 * 1024 * 1024 }, });
@@ -525,6 +541,48 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     let response = await Women.findByIdAndDelete(id)
     res.json(response)
     console.log(response);
+  })
+
+  app.delete('/deleteProduct/:id/:category', async (req,res)=>{
+    try{
+
+      let id =req.params.id
+      let category =req.params.category
+      
+      if(category==='mobilephones'){
+        let response = await Mobiles.findByIdAndDelete(id)
+        console.log(response);
+        res.json(response)
+      }
+
+      if(category==='laptops'){
+        let response = await Laptops.findByIdAndDelete(id)
+        console.log(response);
+        res.json(response)
+      }
+
+      if(category==='headsets'){
+        let response = await Headsets.findByIdAndDelete(id)
+        console.log(response);
+        res.json(response)
+      }
+
+      if(category==='men'){
+        let response = await Men.findByIdAndDelete(id)
+        console.log(response);
+        res.json(response)
+      }
+
+      if(category==='women'){
+        let response = await Women.findByIdAndDelete(id)
+        console.log(response);
+        res.json(response)
+      }
+
+    }catch(err){
+      console.log(err);
+      res.status(500).json(err.message)
+    }
   })
 
   app.get('/findCustomers', verifyToken, async (req,res)=>{
@@ -1053,7 +1111,7 @@ app.post('/paymentCapture',async (req, res) => {
   } else {
       res.status(400).send('Invalid signature');
   }
-});
+});  
 
 app.get('/findOrder/:id', verifyToken, async(req,res)=>{
   try{
@@ -1180,7 +1238,68 @@ app.get('/findWishlist/:id', async (req,res)=>{
 })
 
 
+io.on('connection', (socket) => {
+  // console.log('A user connected');
 
-  app.listen(8000)
+  socket.on('joinRoom', async (data) => {
+    const { room, hint } = data;
+    console.log(hint,room);
+
+    try {
+      const messages = await Message.find({ room }).sort({ timestamp: 1 });
+      // console.log(messages,'load messages');
+      socket.emit('loadMessages', { messages });
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+
+    socket.join(room);
+  });
+
+  socket.on('adminMessage', async (data) => {
+    const { room, customerId, message, role } = data;
+    console.log(data,'admin msgdata');
+
+    try {
+      const newMessage = new Message({ room, customerId, message, role });
+      const response = await newMessage.save();
+      console.log(response, 'message insert');
+
+      io.to(room).emit('adminMessage', data)
+
+      // Broadcast the message to all users in the room
+      // io.to(room).emit('userMessage', { user, message });
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  });
+
+  socket.on('userMessage', async (data) => {
+    const { room, customerId, message, role } = data;
+
+    try {
+      const newMessage = new Message({ room, customerId, message, role });
+      const response = await newMessage.save();
+      console.log(response, 'message insert');
+      console.log(room,'room');
+      io.to(room).emit('userMessage', data)
+
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
+
+
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+  // app.listen(8000)
 
   // module.exports = app
