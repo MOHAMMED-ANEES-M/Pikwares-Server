@@ -756,39 +756,40 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
     }
   })
 
-  app.get('/customer/orderedProducts/:id',verifyToken, async(req,res)=>{
+  app.get('/orderedProducts/:id',verifyToken, async(req,res)=>{
 
     try{
 
       let id = req.params.id
       console.log(id,'proid');
+
       let mobileResponse = await Mobiles.findById(id)
       if(mobileResponse){
-        // console.log(mobileResponse,'ordered products response');
+        console.log(mobileResponse,'ordered products response');
         return res.json(mobileResponse)
       }
 
       let laptopResponse = await Laptops.findById(id)
       if(laptopResponse){
-        // console.log(laptopResponse,'ordered products response');
+        console.log(laptopResponse,'ordered products response');
         return res.json(laptopResponse)
       }
 
       let headsetResponse = await Headsets.findById(id)
       if(headsetResponse){
-        // console.log(headsetResponse,'ordered products response');
+        console.log(headsetResponse,'ordered products response');
         return res.json(headsetResponse)
       }
 
       let menResponse = await Men.findById(id)
       if(menResponse){
-        // console.log(menResponse,'ordered products response');
+        console.log(menResponse,'ordered products response');
         return res.json(menResponse)
       }
 
       let womenResponse = await Women.findById(id)
       if(womenResponse){
-        // console.log(womenResponse,'ordered products response');
+        console.log(womenResponse,'ordered products response');
         return res.json(womenResponse)
       }
 

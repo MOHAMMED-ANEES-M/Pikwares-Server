@@ -7,8 +7,8 @@ const headsetsSchema = mongoose.Schema({
     type : String,
     minlength: 2,
     required : true,
-},
-productprice: {
+  },
+  productprice: {
     type: String,
     maxlength: 10,
     required: true,

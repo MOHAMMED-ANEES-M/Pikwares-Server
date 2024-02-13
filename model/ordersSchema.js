@@ -36,6 +36,20 @@ const ordersSchema = mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    productname : {
+        type : String,
+        minlength: 2,
+        required : true,
+    },
+     productprice: {
+        type: String,
+        maxlength: 10,
+        required: true,
+    },
+    images: {
+        type: [String],
+        required: true,
+    },
 })
 
 ordersSchema.pre('save', function (next) {
