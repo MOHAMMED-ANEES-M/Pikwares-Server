@@ -1240,14 +1240,13 @@ app.get('/findWishlist/:id', async (req,res)=>{
 
 
 io.on('connection', (socket) => {
-  // console.log('A user connected');
 
   socket.on('joinRoom', async (data) => {
-    const { from, to, hint } = data;
+    const { room, to, hint } = data;
     console.log(hint);
 
     try {
-      const messages = await Message.find({ $or: [{ from }, { to }] }).sort({ timestamp: 1 });
+      const messages = await Message.find({ $or: [{ room:room }, { room:to }] }).sort({ timestamp: 1 });
 
       socket.emit('loadMessages', { messages });
       
@@ -1255,36 +1254,35 @@ io.on('connection', (socket) => {
       console.error('Error fetching messages:', error);
     }
 
-    socket.join(from);
+    socket.join(room);
   });
 
-  socket.on('adminMessage', async (data) => {
-    const { room, customerId, message, role } = data;
-    console.log(data,'admin msgdata');
+  // socket.on('adminMessage', async (data) => {
+  //   const { room, customerId, message, role } = data;
+  //   console.log(data,'admin msgdata');
 
-    try {
-      const newMessage = new Message({ room, customerId, message, role });
-      const response = await newMessage.save();
-      console.log(response, 'adminMessage insert');
+  //   try {
+  //     const newMessage = new Message({ room, customerId, message, role });
+  //     const response = await newMessage.save();
+  //     console.log(response, 'adminMessage insert');
 
-      io.to(room).emit('adminMessage', data)
+  //     io.to(room).emit('adminMessage', data)
 
-      // Broadcast the message to all users in the room
-      // io.to(room).emit('userMessage', { user, message });
-    } catch (error) {
-      console.error('Error saving message:', error);
-    }
-  });
+  //     // Broadcast the message to all users in the room
+  //     // io.to(room).emit('userMessage', { user, message });
+  //   } catch (error) {
+  //     console.error('Error saving message:', error);
+  //   }
+  // });
 
   socket.on('sendMessage', async (data) => {
-    const { from, to, customerId, message, role } = data;
+    const { room, to, customerId, message, role } = data;
 
     try {
       const newMessage = new Message({ room, customerId, message, role });
       const response = await newMessage.save();
-      console.log(response, 'userMessage insert');
-      console.log(room,'room');
-      io.to(to).emit('userMessage', data)
+      console.log(response, 'sendMessage insert');
+      io.to(to).emit('recieveMessage', response)
 
     } catch (error) {
       console.error('Error saving message:', error);
