@@ -1243,18 +1243,19 @@ io.on('connection', (socket) => {
   // console.log('A user connected');
 
   socket.on('joinRoom', async (data) => {
-    const { room, hint } = data;
-    console.log(hint,room);
+    const { from, to, hint } = data;
+    console.log(hint);
 
     try {
-      const messages = await Message.find({ room }).sort({ timestamp: 1 });
-      // console.log(messages,'load messages');
+      const messages = await Message.find({ $or: [{ from }, { to }] }).sort({ timestamp: 1 });
+
       socket.emit('loadMessages', { messages });
+      
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
 
-    socket.join(room);
+    socket.join(from);
   });
 
   socket.on('adminMessage', async (data) => {
@@ -1264,7 +1265,7 @@ io.on('connection', (socket) => {
     try {
       const newMessage = new Message({ room, customerId, message, role });
       const response = await newMessage.save();
-      console.log(response, 'message insert');
+      console.log(response, 'adminMessage insert');
 
       io.to(room).emit('adminMessage', data)
 
@@ -1275,15 +1276,15 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('userMessage', async (data) => {
-    const { room, customerId, message, role } = data;
+  socket.on('sendMessage', async (data) => {
+    const { from, to, customerId, message, role } = data;
 
     try {
       const newMessage = new Message({ room, customerId, message, role });
       const response = await newMessage.save();
-      console.log(response, 'message insert');
+      console.log(response, 'userMessage insert');
       console.log(room,'room');
-      io.to(room).emit('userMessage', data)
+      io.to(to).emit('userMessage', data)
 
     } catch (error) {
       console.error('Error saving message:', error);

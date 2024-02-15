@@ -6,6 +6,12 @@ const messageSchema = mongoose.Schema({
     room : {
         type : String,
     },
+    from : {
+        type : String,
+    },
+    to : {
+        type : String,
+    },
     customerId: {
         type: String,
     },
