@@ -1280,7 +1280,8 @@ io.on('connection', (socket) => {
 
     try {
       const newMessage = new Message({ room, customerId, message, role });
-      const response = await newMessage.save();
+      const response = await newMessage.save()
+      ;
       console.log(response, 'sendMessage insert');
       io.to(to).emit('recieveMessage', response)
 
