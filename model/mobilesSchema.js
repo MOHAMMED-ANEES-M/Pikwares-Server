@@ -17,6 +17,21 @@ const mobilesSchema = mongoose.Schema({
         type: String,
         required: true,
       },
+      productactualprice: {
+        type: String,
+        maxlength: 10,
+        required: true,
+      },
+      deliverycharge: {
+        type: String,
+        maxlength: 10,
+        required: true,
+      },
+      stock: {
+        type: String,
+        maxlength: 10,
+        required: true,
+      },
       productdescription: {
         type: String,
         minlength: 3,

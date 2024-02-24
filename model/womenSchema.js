@@ -13,6 +13,21 @@ const womenSchema = mongoose.Schema({
         maxlength: 10,
         required: true,
       },
+      productactualprice: {
+        type: String,
+        maxlength: 10,
+        required: true,
+      },
+      deliverycharge: {
+        type: String,
+        maxlength: 10,
+        required: true,
+      },
+      stock: {
+        type: String,
+        maxlength: 10,
+        required: true,
+      },
       productcategory: {
         type: String,
         required: true,

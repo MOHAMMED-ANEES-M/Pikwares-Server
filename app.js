@@ -303,7 +303,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
   app.post('/products/insert', upload.array('images', 5), async (req,res)=>{
 
     const { body } = req;
-    console.log('reqbody: ',req.body.images);
+    // console.log('reqbody: ',req.body);
     // const images = req.body.images.map(file => ({
     //   filename: file.originalname,
     //   data: file.buffer,
@@ -321,6 +321,9 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
         const newProduct = new Mobiles({
           productname: body.productname,
           productprice: body.productprice,
+          productactualprice: body.productactualprice,
+          deliverycharge: body.deliverycharge,
+          stock: body.stock,
           productcategory: body.productcategory,
           productdescription: body.productdescription,
           images: req.body.images,
@@ -341,6 +344,9 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           const newProduct = new Laptops({
             productname: body.productname,
             productprice: body.productprice,
+            productactualprice: body.productactualprice,
+            deliverycharge: body.deliverycharge,
+            stock: body.stock,
             productcategory: body.productcategory,
             productdescription: body.productdescription,
             images: req.body.images,
@@ -361,6 +367,9 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           const newProduct = new Headsets({
             productname: body.productname,
             productprice: body.productprice,
+            productactualprice: body.productactualprice,
+            deliverycharge: body.deliverycharge,
+            stock: body.stock,
             productcategory: body.productcategory,
             productdescription: body.productdescription,
             images: req.body.images,
@@ -380,10 +389,13 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           console.log('men working');
           const newProduct = new Men({
             productname: body.productname,
-            productprice: body.productprice,
-            productcategory: body.productcategory,
-            productdescription: body.productdescription,
-            images: req.body.images,
+          productprice: body.productprice,
+          productactualprice: body.productactualprice,
+          deliverycharge: body.deliverycharge,
+          stock: body.stock,
+          productcategory: body.productcategory,
+          productdescription: body.productdescription,
+          images: req.body.images,
           });
           const response = await newProduct.save();
           res.json(response);
@@ -400,10 +412,13 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           console.log('women working');
           const newProduct = new Women({
             productname: body.productname,
-            productprice: body.productprice,
-            productcategory: body.productcategory,
-            productdescription: body.productdescription,
-            images: req.body.images,
+          productprice: body.productprice,
+          productactualprice: body.productactualprice,
+          deliverycharge: body.deliverycharge,
+          stock: body.stock,
+          productcategory: body.productcategory,
+          productdescription: body.productdescription,
+          images: req.body.images,
           });
           const response = await newProduct.save();
           res.json(response);
