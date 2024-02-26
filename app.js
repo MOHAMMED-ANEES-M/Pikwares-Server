@@ -665,7 +665,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
 
   app.post('/insertCart/:id', async (req,res)=>{
 
-    let data = ({ customerId: req.params.id,productId: req.body._id , productname: req.body.productname, productprice: req.body.productprice, productcategory: req.body.productcategory, productdescription: req.body.productdescription, images: req.body.images})
+    let data = ({ customerId: req.params.id,productId: req.body._id , productname: req.body.productname, productprice: req.body.productprice, productcategory: req.body.productcategory, productdescription: req.body.productdescription, productactualprice: req.body.productactualprice, images: req.body.images})
     console.log(data,'cart item');
 
     try{
@@ -751,6 +751,13 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
       let newOrder = new Orders(req.body)
       let response = await newOrder.save()
       console.log(response,'order insert response');
+      let MobileStock = await Mobiles.findById(req.body.productId)
+      if(MobileStock.data!==''){
+        const newStock = MobileStock.stock - req.body.count
+        let MobileStockChange = await Mobiles.findByIdAndUpdate(req.body.productId, {stock:newStock}, {new:true})
+        console.log('mobilestockchange',MobileStockChange);
+        // res.json(MobileStockChange)
+      }
       res.json(response)
     }catch(err){
       console.log(err);
@@ -827,18 +834,20 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           let prResponse = await Mobiles.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) + parseInt(defaultActualPrice, 10);
         }
         if(req.body.role==='priceDecrement'){
           let prResponse = await Mobiles.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) - parseInt(defaultActualPrice, 10);
         }
-        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
-        // console.log(response,'cartupdate response');
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice, productactualprice: newActualPrice }, { new: true });
+        console.log(response,'cartupdate response');
         res.json(response)
       }
 
@@ -847,17 +856,19 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           let prResponse = await Laptops.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) + parseInt(defaultActualPrice, 10);
         }
         if(req.body.role==='priceDecrement'){
           let prResponse = await Laptops.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) - parseInt(defaultActualPrice, 10);
         }
-        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice, productactualprice: newActualPrice }, { new: true });
         // console.log(response,'cartupdate response');
         res.json(response)
       }
@@ -867,17 +878,19 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           let prResponse = await Headsets.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) + parseInt(defaultActualPrice, 10);
         }
         if(req.body.role==='priceDecrement'){
           let prResponse = await Headsets.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) - parseInt(defaultActualPrice, 10);
         }
-        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice, productactualprice: newActualPrice }, { new: true });
         // console.log(response,'cartupdate response');
         res.json(response)
       }
@@ -887,17 +900,19 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           let prResponse = await Men.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) + parseInt(defaultActualPrice, 10);
         }
         if(req.body.role==='priceDecrement'){
           let prResponse = await Men.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) - parseInt(defaultActualPrice, 10);
         }
-        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice, productactualprice: newActualPrice }, { new: true });
         // console.log(response,'cartupdate response');
         res.json(response)
       }
@@ -907,17 +922,19 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
           let prResponse = await Women.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) + parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) + parseInt(defaultActualPrice, 10);
         }
         if(req.body.role==='priceDecrement'){
           let prResponse = await Women.findOne({_id:req.body.productId})
           console.log(prResponse,'prresponse');
           let defaultPrice = prResponse.productprice
+          let defaultActualPrice = prResponse.productactualprice
           var newPrice = parseInt(req.body.productprice, 10) - parseInt(defaultPrice, 10);
-          console.log(newPrice,'newprice');
+          var newActualPrice = parseInt(req.body.productactualprice, 10) - parseInt(defaultActualPrice, 10);
         }
-        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice }, { new: true });
+        let response = await Cart.findByIdAndUpdate(id, { count: req.body.count, productprice: newPrice, productactualprice: newActualPrice }, { new: true });
         // console.log(response,'cartupdate response');
         res.json(response)
       }
