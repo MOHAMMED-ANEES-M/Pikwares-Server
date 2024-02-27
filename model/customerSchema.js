@@ -38,9 +38,24 @@ const customerSchema = mongoose.Schema({
         max: 9999999999,
         required: true,
       },
+      otp: {
+        type:String
+      },
+      otpTimestamp: {
+        type: Date,
+      },
 
 })
 
+customerSchema.methods.isOtpExpired = function () {
+  if (!this.otpTimestamp) {
+    return true; // If timestamp is not set, consider OTP as expired
+  }
+  const now = new Date();
+  const expirationTime = new Date(this.otpTimestamp);
+  expirationTime.setMinutes(expirationTime.getMinutes() + 3); // Set expiration time to 3 minutes
+  return now > expirationTime;
+};
 
 const Customer = mongoose.model('Customer',customerSchema,'customers');
 

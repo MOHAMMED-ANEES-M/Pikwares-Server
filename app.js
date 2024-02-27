@@ -12,6 +12,7 @@ const socketIo = require('socket.io');
 const http = require('http');
 const server = http.createServer(app);
 var cors = require('cors');
+var nodemailer = require('nodemailer');
 
 const secretKey = 'uhJjQhJyCGOFKcV27wCXodMB'; 
 
@@ -752,13 +753,42 @@ mongoose.connect('mongodb://127.0.0.1:27017/Pikwares')
       let response = await newOrder.save()
       console.log(response,'order insert response');
       let MobileStock = await Mobiles.findById(req.body.productId)
-      if(MobileStock.data!==''){
+      if(MobileStock && MobileStock.data!==''){
         const newStock = MobileStock.stock - req.body.count
         let MobileStockChange = await Mobiles.findByIdAndUpdate(req.body.productId, {stock:newStock}, {new:true})
-        console.log('mobilestockchange',MobileStockChange);
+        res.json(response)
+        return console.log('mobilestockchange',MobileStockChange);
+      }
+      let LaptopStock = await Laptops.findById(req.body.productId)
+      if(LaptopStock && LaptopStock.data!==''){
+        const newStock = LaptopStock.stock - req.body.count
+        let LaptopStockChange = await Laptops.findByIdAndUpdate(req.body.productId, {stock:newStock}, {new:true})
+        res.json(response)
+        return console.log('laptoptockchange',LaptopStockChange);
+      }
+      let HeadsetStock = await Headsets.findById(req.body.productId)
+      if(HeadsetStock && HeadsetStock.data!==''){
+        const newStock = HeadsetStock.stock - req.body.count
+        let HeadsetStockChange = await Headsets.findByIdAndUpdate(req.body.productId, {stock:newStock}, {new:true})
+        res.json(response)
+        return console.log('headsettockchange',HeadsetStockChange);
+      }
+      let MenStock = await Men.findById(req.body.productId)
+      if(MenStock && MenStock.data!==''){
+        const newStock = MenStock.stock - req.body.count
+        let MenStockChange = await Men.findByIdAndUpdate(req.body.productId, {stock:newStock}, {new:true})
+        res.json(response)
+        return console.log('mentockchange',MenStockChange);
         // res.json(MobileStockChange)
       }
-      res.json(response)
+      let WomenStock = await Women.findById(req.body.productId)
+      if(WomenStock && WomenStock.data!==''){
+        const newStock = WomenStock.stock - req.body.count
+        let WomenStockChange = await Women.findByIdAndUpdate(req.body.productId, {stock:newStock}, {new:true})
+        res.json(response)
+        return console.log('womenstockchange',WomenStockChange);
+        // res.json(MobileStockChange)
+      }
     }catch(err){
       console.log(err);
       res.status(500).json(err.message)
@@ -1269,6 +1299,69 @@ app.get('/findWishlist/:id', async (req,res)=>{
   }
 
 })
+
+let transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  service : 'Gmail',
+  
+  auth: {
+    user: 'pikwares.cs@gmail.com',
+    pass: 'zpbl chbe jszp vqay',
+  }
+  
+});
+
+function generateOTP() {
+  let otp = Math.random();
+  otp = otp * 1000000;
+  otp = parseInt(otp);
+  return otp;
+} 
+
+app.post('/sendotp',async (req,res)=>{
+
+  console.log(req.body,'sendotp reqbody');
+  let user = await Customer.findById(req.body.userId)
+  console.log(user,'otp user');
+  let email = user.email
+  console.log(email,'email');
+
+  var otp = generateOTP();
+  user.otp = otp;
+  user.otpTimestamp = new Date();
+  await user.save();
+
+  var mailOptions={
+     to: email,
+     subject: "OTP for Product purchase ",
+     html: "<p>OTP for product purchase verification is </p>"  + "<h3 style='font-weight:bold;'>" + otp +"</h3>" 
+   };
+   
+   transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+          return console.log(error);
+      }
+      console.log('Message sent: %s', info.messageId);   
+      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+      res.json({success:'OTP sent successfully'})
+      res.render('otp');
+  });
+});
+
+app.post('/verifyotp',async (req,res)=>{
+
+  let user = await Customer.findById(req.body.userId);
+  console.log(user.otp,'otpverify user');
+  console.log(req.body.otp.otp,'verify req body');
+  if( req.body.otp.otp === user.otp){
+    res.status(200).json({success:true})
+  }
+  else{
+      res.status(500).json({msg : 'incorrect OTP'});
+  }
+}); 
 
 
 io.on('connection', (socket) => {
