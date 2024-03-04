@@ -1245,7 +1245,7 @@ app.get('/review/customers/:id', async(req,res)=>{
 
 app.post('/insertWishlist/:id', async (req,res)=>{
 
-  let data = ({ customerId: req.params.id,productId: req.body._id , productname: req.body.productname, productprice: req.body.productprice, productcategory: req.body.productcategory, productdescription: req.body.productdescription, images: req.body.images})
+  let data = ({ customerId: req.params.id,productId: req.body._id , productname: req.body.productname, productprice: req.body.productprice, productactualprice: req.body.productactualprice, productcategory: req.body.productcategory, productdescription: req.body.productdescription, images: req.body.images})
   console.log(data,'wishlist item');
 
   try{
