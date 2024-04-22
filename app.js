@@ -32,7 +32,7 @@ const Message = require('./model/messageSchema');
 
 app.use(cors())
 
-mongoose.connect('mongodb+srv://Pikwares2024:2024%40Pikwares@pikwarescluster.7ff2mlz.mongodb.net/')
+mongoose.connect('mongodb+srv://Pikwares2024:2024%40Pikwares@pikwarescluster.7ff2mlz.mongodb.net/Pikwares')
   .then(() => console.log('Connected!'));
 
   const db=mongoose.connection
