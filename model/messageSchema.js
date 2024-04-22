@@ -15,7 +15,8 @@ const messageSchema = mongoose.Schema({
     },
     role: { 
         type: String, 
-        required: true },
+        required: true 
+    },
     timestamb: {
         type: Date,
         default: Date.now,
