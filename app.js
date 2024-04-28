@@ -41,7 +41,7 @@ mongoose.connect('mongodb+srv://Pikwares2024:2024%40Pikwares@pikwarescluster.7ff
 
   const io = socketIo(server,{
     cors: {
-        origin: 'http://localhost:3000',
+        origin: 'https://pikwares.vercel.app',
         methods: ['GET','POST'],
         credentials: true,
         transports: ['websocket'],
@@ -81,7 +81,7 @@ mongoose.connect('mongodb+srv://Pikwares2024:2024%40Pikwares@pikwarescluster.7ff
       const token = jwt.sign({ id: express.response.id, email: express.response.email }, 'abc');
       res.locals.adminToken = token
       console.log('token: ',token);
-    }
+    } 
     next();
 
   };
